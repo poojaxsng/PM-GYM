@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PM Gym - Interactive Practice App</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f6f9; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        h1 { color: #1a73e8; margin-top: 0; }
+        .badge { background: #e8f0fe; color: #1a73e8; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
+        .step { display: none; margin-top: 20px; }
+        .step.active { display: block; }
+        .card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
+        .card:hover { border-color: #1a73e8; background: #f8fafd; }
+        .card.selected { border-color: #1a73e8; background: #e8f0fe; font-weight: 500; }
+        button { background: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 1rem; cursor: pointer; margin-top: 15px; }
+        button:hover { background: #1557b0; }
+        .score-board { display: none; text-align: center; padding: 20px; }
+        .summary-box { background: #f8f9fa; border-left: 4px solid #1a73e8; padding: 15px; text-align: left; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <span class="badge">PM FELLOWSHIP GYM</span>
+    <h1 id="title">Interactive Scenario Simulator</h1>
+    <p id="scenario-desc">Loading scenario...</p>
+
+    <!-- STEP 1 -->
+    <div id="step-1" class="step active">
+        <h3>Step 1: Map Business Outcome to Product Outcome</h3>
+        <p><b>Business Goal:</b> <span id="biz-goal"></span></p>
+        <p>Which of the following is a <i>Product Outcome</i> (a direct change in user behavior) that leads to this goal?</p>
+        <div id="step1-options"></div>
+        <button onclick="nextStep(1)">Submit Answer →</button>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="step-2" class="step">
+        <h3>Step 2: Build the KPI Tree</h3>
+        <p>To move the product outcome chosen in Step 1, which metric node serves as the best <b>leading lever</b> in your KPI tree?</p>
+        <div id="step2-options"></div>
+        <button onclick="nextStep(2)">Submit Answer →</button>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="step-3" class="step">
+        <h3>Step 3: Map to Opportunities</h3>
+        <p>What is the root <b>Customer Opportunity / Pain Point</b> to solve here?</p>
+        <div id="step3-options"></div>
+        <button onclick="nextStep(3)">Submit Answer →</button>
+    </div>
+
+    <!-- STEP 4 -->
+    <div id="step-4" class="step">
+        <h3>Step 4: Segment for Scale</h3>
+        <p>Which user segment should you target first to get maximum leverage?</p>
+        <div id="step4-options"></div>
+        <button onclick="submitAll()">Finish Challenge 🎯</button>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="results" class="score-board">
+        <h2>🎉 Scenario Completed!</h2>
+        <p>Here is your generated Product Execution Map:</p>
+        <div class="summary-box" id="summary-content"></div>
+        <button onclick="location.reload()">Try Another Round</button>
+    </div>
+</div>
+
+<script>
+const scenario = {
+    desc: "<b>Company:</b> RideFast (Cab Booking App)<br><b>Problem:</b> Executive team wants to boost monthly revenue by 15% (Business Outcome).",
+    bizGoal: "Increase Monthly Revenue by 15%",
+    step1: [
+        { text: "Increase prices by $2 per ride across the board.", correct: false, feedback: "Incorrect. That is a business lever, not a product/user behavior outcome." },
+        { text: "Increase the % of riders who book a second ride within 7 days.", correct: true, feedback: "Correct! Repeat usage is a key product outcome driving recurring revenue." },
+        { text: "Spend 20% more on Instagram ad campaigns.", correct: false, feedback: "Incorrect. That is a marketing acquisition activity." }
+    ],
+    step2: [
+        { text: "L2 Metric: % of users who save a 'Favorite Location' in app.", correct: true, feedback: "Correct! Saving favorites reduces booking friction, driving repeat rides." },
+        { text: "L2 Metric: Total number of app installs from Google Play.", correct: false, feedback: "Incorrect. App downloads don't guarantee ride completions." }
+    ],
+    step3: [
+        { text: "Riders feel re-entering their destination every morning takes too many taps.", correct: true, feedback: "Spot on! Solves friction for habit-building daily commuters." },
+        { text: "Riders want custom color themes for the app interface.", correct: false, feedback: "Incorrect. Aesthetic preferences rarely drive core business metrics." }
+    ],
+    step4: [
+        { text: "Daily Commuters (Users taking rides Mon-Fri between 8 AM and 10 AM).", correct: true, feedback: "Ideal choice! High-frequency segment with high retention potential." },
+        { text: "One-time Airport Passengers (Users who take 1 ride every 6 months).", correct: false, feedback: "Incorrect. Low frequency makes them hard to scale quickly." }
+    ]
+};
+
+let userChoices = {};
+
+function initApp() {
+    document.getElementById('scenario-desc').innerHTML = scenario.desc;
+    document.getElementById('biz-goal').innerText = scenario.bizGoal;
+    
+    renderOptions('step1-options', scenario.step1, 'step1');
+    renderOptions('step2-options', scenario.step2, 'step2');
+    renderOptions('step3-options', scenario.step3, 'step3');
+    renderOptions('step4-options', scenario.step4, 'step4');
+}
+
+function renderOptions(elementId, options, stepName) {
+    const container = document.getElementById(elementId);
+    container.innerHTML = '';
+    options.forEach((opt, idx) => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerText = opt.text;
+        div.onclick = () => {
+            Array.from(container.children).forEach(c => c.classList.remove('selected'));
+            div.classList.add('selected');
+            userChoices[stepName] = opt;
+        };
+        container.appendChild(div);
+    });
+}
+
+function nextStep(currentStep) {
+    if (!userChoices['step' + currentStep]) {
+        alert('Please select an option first!');
+        return;
+    }
+    document.getElementById(`step-${currentStep}`).classList.remove('active');
+    document.getElementById(`step-${currentStep + 1}`).classList.add('active');
+}
+
+function submitAll() {
+    if (!userChoices['step4']) {
+        alert('Please select an option first!');
+        return;
+    }
+    document.getElementById('step-4').classList.remove('active');
+    document.getElementById('title').innerText = "Strategy Breakdown";
+    document.getElementById('scenario-desc').innerText = "Here is how your choices mapped out:";
+
+    const summary = `
+        <p><b>1. Business Outcome:</b> ${scenario.bizGoal}</p>
+        <p><b>2. Product Outcome:</b> ${userChoices.step1.text} ${userChoices.step1.correct ? '✅' : '❌'}</p>
+        <p><b>3. Key KPI Lever:</b> ${userChoices.step2.text} ${userChoices.step2.correct ? '✅' : '❌'}</p>
+        <p><b>4. Core Opportunity:</b> ${userChoices.step3.text} ${userChoices.step3.correct ? '✅' : '❌'}</p>
+        <p><b>5. Target Segment:</b> ${userChoices.step4.text} ${userChoices.step4.correct ? '✅' : '❌'}</p>
+    `;
+    
+    document.getElementById('summary-content').innerHTML = summary;
+    document.getElementById('results').style.display = 'block';
+}
+
+initApp();
+</script>
+
+</body>
+</html>

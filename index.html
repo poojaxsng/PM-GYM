@@ -2,111 +2,429 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>PM Gym - Interactive Practice App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The PM Gym - Advanced Practice & Scenario Simulator</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f6f9; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        h1 { color: #1a73e8; margin-top: 0; }
-        .badge { background: #e8f0fe; color: #1a73e8; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85em; }
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #202124;
+            --border: #dadce0;
+            --success: #1e8e3e;
+            --danger: #d93025;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f1f3f4;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .badge {
+            background: #e8f0fe;
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .submit-btn-alt {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .submit-btn-alt:hover {
+            background: #e8f0fe;
+        }
+
+        /* Scenario Selector */
+        .selector-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .scenario-card {
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .scenario-card:hover {
+            border-color: var(--primary);
+            background: #f8fafd;
+        }
+
+        .scenario-card.active {
+            border-color: var(--primary);
+            background: #e8f0fe;
+        }
+
+        .scenario-card h4 { margin: 0 0 5px 0; color: var(--primary); }
+        .scenario-card p { margin: 0; font-size: 0.85rem; color: #5f6368; }
+
+        /* Steps */
         .step { display: none; margin-top: 20px; }
         .step.active { display: block; }
-        .card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
-        .card:hover { border-color: #1a73e8; background: #f8fafd; }
-        .card.selected { border-color: #1a73e8; background: #e8f0fe; font-weight: 500; }
-        button { background: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 1rem; cursor: pointer; margin-top: 15px; }
-        button:hover { background: #1557b0; }
-        .score-board { display: none; text-align: center; padding: 20px; }
-        .summary-box { background: #f8f9fa; border-left: 4px solid #1a73e8; padding: 15px; text-align: left; margin: 20px 0; }
+
+        .card {
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #fff;
+        }
+
+        .card:hover {
+            border-color: var(--primary);
+            background: #f8fafd;
+        }
+
+        .card.selected {
+            border-color: var(--primary);
+            background: #e8f0fe;
+            font-weight: 600;
+        }
+
+        button.main-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        button.main-btn:hover { background: var(--primary-dark); }
+
+        /* Explanations & Results */
+        .score-board { display: none; }
+        
+        .breakdown-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .breakdown-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .tag-correct { color: var(--success); font-weight: bold; }
+        .tag-incorrect { color: var(--danger); font-weight: bold; }
+
+        .pm-insight {
+            background: #f8f9fa;
+            border-left: 4px solid var(--primary);
+            padding: 12px 15px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            border-radius: 0 6px 6px 0;
+        }
+
+        /* Modal Form */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem; }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <span class="badge">PM FELLOWSHIP GYM</span>
-    <h1 id="title">Interactive Scenario Simulator</h1>
-    <p id="scenario-desc">Loading scenario...</p>
+    <div class="header">
+        <div>
+            <span class="badge">PM Fellowship Gym v2.0</span>
+            <h2 style="margin: 5px 0 0 0;">Interactive Scenario Simulator</h2>
+        </div>
+        <button class="submit-btn-alt" onclick="toggleModal(true)">+ Submit a Scenario</button>
+    </div>
+
+    <!-- SCENARIO SELECTOR -->
+    <p style="font-weight: 600; margin-bottom: 10px;">Select an Industry / Domain to Practice:</p>
+    <div class="selector-box" id="selector-box"></div>
+
+    <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
+
+    <div id="scenario-intro">
+        <h3 id="scenario-title" style="color: var(--primary); margin-top: 0;"></h3>
+        <p id="scenario-desc"></p>
+    </div>
 
     <!-- STEP 1 -->
     <div id="step-1" class="step active">
-        <h3>Step 1: Map Business Outcome to Product Outcome</h3>
+        <h3>Step 1: Business Outcome ➔ Product Outcome</h3>
         <p><b>Business Goal:</b> <span id="biz-goal"></span></p>
-        <p>Which of the following is a <i>Product Outcome</i> (a direct change in user behavior) that leads to this goal?</p>
+        <p>Which option represents the best <b>Product Outcome</b> (a measurable change in user behavior)?</p>
         <div id="step1-options"></div>
-        <button onclick="nextStep(1)">Submit Answer →</button>
+        <button class="main-btn" onclick="nextStep(1)">Submit Step 1 →</button>
     </div>
 
     <!-- STEP 2 -->
     <div id="step-2" class="step">
-        <h3>Step 2: Build the KPI Tree</h3>
-        <p>To move the product outcome chosen in Step 1, which metric node serves as the best <b>leading lever</b> in your KPI tree?</p>
+        <h3>Step 2: KPI Tree (Leverage Metrics)</h3>
+        <p>To move the product outcome chosen, which sub-metric node serves as your primary <b>leading indicator lever</b>?</p>
         <div id="step2-options"></div>
-        <button onclick="nextStep(2)">Submit Answer →</button>
+        <button class="main-btn" onclick="nextStep(2)">Submit Step 2 →</button>
     </div>
 
     <!-- STEP 3 -->
     <div id="step-3" class="step">
-        <h3>Step 3: Map to Opportunities</h3>
+        <h3>Step 3: Opportunity Mapping (User Pain Points)</h3>
         <p>What is the root <b>Customer Opportunity / Pain Point</b> to solve here?</p>
         <div id="step3-options"></div>
-        <button onclick="nextStep(3)">Submit Answer →</button>
+        <button class="main-btn" onclick="nextStep(3)">Submit Step 3 →</button>
     </div>
 
     <!-- STEP 4 -->
     <div id="step-4" class="step">
-        <h3>Step 4: Segment for Scale</h3>
-        <p>Which user segment should you target first to get maximum leverage?</p>
+        <h3>Step 4: User Segmentation for Scale</h3>
+        <p>Which user cohort gives you the highest strategic leverage to tackle first?</p>
         <div id="step4-options"></div>
-        <button onclick="submitAll()">Finish Challenge 🎯</button>
+        <button class="main-btn" onclick="submitAll()">Analyze My Choices 🎯</button>
     </div>
 
     <!-- RESULTS -->
     <div id="results" class="score-board">
-        <h2>🎉 Scenario Completed!</h2>
-        <p>Here is your generated Product Execution Map:</p>
-        <div class="summary-box" id="summary-content"></div>
-        <button onclick="location.reload()">Try Another Round</button>
+        <h2>🎯 Senior PM Breakdown & Coaching</h2>
+        <p>Here is how your decisions align with core product management logic:</p>
+        <div id="summary-content"></div>
+        <button class="main-btn" onclick="resetQuiz()">Try Another Industry</button>
+    </div>
+</div>
+
+<!-- SUBMIT SCENARIO MODAL -->
+<div class="modal" id="scenario-modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0;">Submit a Practice Scenario</h3>
+        <p style="font-size:0.85rem; color:#5f6368;">Have a scenario from your fellowship or interview practice? Add it here!</p>
+        <div class="form-group">
+            <label>Your Name / Cohort:</label>
+            <input type="text" id="form-name" placeholder="e.g., Pooja (Cohort 5)">
+        </div>
+        <div class="form-group">
+            <label>Industry / Product Name:</label>
+            <input type="text" id="form-industry" placeholder="e.g., FinTech / Paytm">
+        </div>
+        <div class="form-group">
+            <label>Business Goal or Problem Statement:</label>
+            <textarea id="form-problem" rows="3" placeholder="Describe the business outcome or metric drop..."></textarea>
+        </div>
+        <button class="main-btn" onclick="submitUserForm()" style="width:100%;">Submit Idea</button>
+        <button onclick="toggleModal(false)" style="background:none; border:none; color:#5f6368; width:100%; margin-top:10px; cursor:pointer;">Cancel</button>
     </div>
 </div>
 
 <script>
-const scenario = {
-    desc: "<b>Company:</b> RideFast (Cab Booking App)<br><b>Problem:</b> Executive team wants to boost monthly revenue by 15% (Business Outcome).",
-    bizGoal: "Increase Monthly Revenue by 15%",
-    step1: [
-        { text: "Increase prices by $2 per ride across the board.", correct: false, feedback: "Incorrect. That is a business lever, not a product/user behavior outcome." },
-        { text: "Increase the % of riders who book a second ride within 7 days.", correct: true, feedback: "Correct! Repeat usage is a key product outcome driving recurring revenue." },
-        { text: "Spend 20% more on Instagram ad campaigns.", correct: false, feedback: "Incorrect. That is a marketing acquisition activity." }
-    ],
-    step2: [
-        { text: "L2 Metric: % of users who save a 'Favorite Location' in app.", correct: true, feedback: "Correct! Saving favorites reduces booking friction, driving repeat rides." },
-        { text: "L2 Metric: Total number of app installs from Google Play.", correct: false, feedback: "Incorrect. App downloads don't guarantee ride completions." }
-    ],
-    step3: [
-        { text: "Riders feel re-entering their destination every morning takes too many taps.", correct: true, feedback: "Spot on! Solves friction for habit-building daily commuters." },
-        { text: "Riders want custom color themes for the app interface.", correct: false, feedback: "Incorrect. Aesthetic preferences rarely drive core business metrics." }
-    ],
-    step4: [
-        { text: "Daily Commuters (Users taking rides Mon-Fri between 8 AM and 10 AM).", correct: true, feedback: "Ideal choice! High-frequency segment with high retention potential." },
-        { text: "One-time Airport Passengers (Users who take 1 ride every 6 months).", correct: false, feedback: "Incorrect. Low frequency makes them hard to scale quickly." }
-    ]
-};
+const scenarios = [
+    {
+        id: "mobility",
+        name: "B2C Mobility App",
+        company: "RideFast",
+        title: "RideFast: Repeat Usage Strategy",
+        desc: "RideFast's executive team wants to boost overall revenue by 15% (Business Outcome) without increasing marketing spend.",
+        bizGoal: "Increase Monthly Revenue by 15%",
+        step1: [
+            { text: "Increase base fare prices by $2 per ride across the board.", correct: false },
+            { text: "Increase % of active riders who book a 2nd ride within 7 days.", correct: true },
+            { text: "Increase ad budget on Google Search to drive new installs.", correct: false }
+        ],
+        step2: [
+            { text: "% of users who save 'Favorite Locations' (Home/Work) in app.", correct: true },
+            { text: "Total app downloads on iOS App Store.", correct: false }
+        ],
+        step3: [
+            { text: "Commuters feel re-entering their morning route daily requires too many taps.", correct: true },
+            { text: "Riders want the app icon to change color dynamically.", correct: false }
+        ],
+        step4: [
+            { text: "Daily Commuters (Riders booking Mon-Fri 8 AM - 10 AM).", correct: true },
+            { text: "One-time Airport Passengers (Riders booking once every 6 months).", correct: false }
+        ],
+        insights: {
+            s1: "<b>How a PM Thinks:</b> Price hikes drive short-term revenue but harm retention. Advertising increases acquisition costs. A PM targets <i>user retention (repeat rides)</i>—a high-leverage product outcome.",
+            s2: "<b>KPI Tree Logic:</b> Saving favorite locations cuts booking friction from 15 seconds to 2 seconds. Reduced friction directly lifts conversion to 2nd ride.",
+            s3: "<b>Opportunity Mapping:</b> Solve functional pain points that happen frequently (re-entering destination) rather than cosmetic features (app color).",
+            s4: "<b>Segmentation Strategy:</b> Daily commuters represent high frequency. Retaining a daily commuter creates recurring long-term customer lifetime value (LTV)."
+        }
+    },
+    {
+        id: "edtech",
+        name: "EdTech / Consumer",
+        company: "SkillStride",
+        title: "SkillStride: Course Completion & Retention",
+        desc: "SkillStride has strong user signups, but active monthly users (MAU) drop by 40% after week 2.",
+        bizGoal: "Reduce 30-Day Churn Rate by 20%",
+        step1: [
+            { text: "Increase the percentage of users completing at least 1 lesson per week.", correct: true },
+            { text: "Send 5 marketing push notifications every day to inactive users.", correct: false },
+            { text: "Offer a 50% discount on annual subscriptions.", correct: false }
+        ],
+        step2: [
+            { text: "% of users who set a daily study goal during onboarding.", correct: true },
+            { text: "Total hours of video content uploaded by instructors.", correct: false }
+        ],
+        step3: [
+            { text: "Learners lose motivation because 45-minute videos are too long for busy schedules.", correct: true },
+            { text: "Learners want a dark mode interface option.", correct: false }
+        ],
+        step4: [
+            { text: "Working Professionals (15–30 mins free time per day).", correct: true },
+            { text: "Full-Time College Students (Multiple hours free per day).", correct: false }
+        ],
+        insights: {
+            s1: "<b>How a PM Thinks:</b> Churn is driven by lack of perceived value. Spamming notifications or discounting price doesn't build learning habits—driving <i>weekly lesson completion</i> does.",
+            s2: "<b>KPI Tree Logic:</b> Habit formation starts in onboarding. Users who set a commitment goal demonstrate a 2-3x higher retention rate.",
+            s3: "<b>Opportunity Mapping:</b> Address core learning friction (video length vs. available time). Micro-learning bites solve the actual schedule pain point.",
+            s4: "<b>Segmentation Strategy:</b> Working professionals have high intent and high ability to pay, but low time—making them the ideal segment for bite-sized learning features."
+        }
+    },
+    {
+        id: "saas",
+        name: "B2B Enterprise SaaS",
+        company: "CloudMetrics",
+        title: "CloudMetrics: Free-to-Paid Conversion",
+        desc: "CloudMetrics offers a 14-day free trial, but only 2% of trial users convert to paid plans.",
+        bizGoal: "Increase Free-to-Paid Trial Conversion from 2% to 5%",
+        step1: [
+            { text: "Increase the % of trial teams that invite at least 2 teammates in week 1.", correct: true },
+            { text: "Shorten free trial duration from 14 days to 7 days.", correct: false },
+            { text: "Hire 10 more sales representatives.", correct: false }
+        ],
+        step2: [
+            { text: "% of teams completing the 'Connect Data Source' integration within 24 hours.", correct: true },
+            { text: "Number of pageviews on the pricing page.", correct: false }
+        ],
+        step3: [
+            { text: "Users struggle to see value because connecting their database requires developer assistance.", correct: true },
+            { text: "Users want more color options for custom data charts.", correct: false }
+        ],
+        step4: [
+            { text: "Mid-Market Tech Teams (50-200 employees with fast setup capability).", correct: true },
+            { text: "Large Enterprise Corporations (5,000+ employees with strict legal procurement).", correct: false }
+        ],
+        insights: {
+            s1: "<b>How a PM Thinks:</b> B2B SaaS value relies on team collaboration (multiplayer effect). Inviting teammates creates organizational stickiness.",
+            s2: "<b>KPI Tree Logic:</b> Time-to-Value (TTV) is critical. Connecting data sources is the 'Aha! moment' that predicts paid conversion.",
+            s3: "<b>Opportunity Mapping:</b> Friction during data setup prevents users from reaching the value moment. Simplifying setup drives core metric movement.",
+            s4: "<b>Segmentation Strategy:</b> Mid-market teams can adopt software without months of legal clearance, allowing faster product-led growth."
+        }
+    }
+];
 
+let currentScenario = scenarios[0];
 let userChoices = {};
 
-function initApp() {
-    document.getElementById('scenario-desc').innerHTML = scenario.desc;
-    document.getElementById('biz-goal').innerText = scenario.bizGoal;
+function initSelector() {
+    const box = document.getElementById('selector-box');
+    box.innerHTML = '';
+    scenarios.forEach((sc, idx) => {
+        const div = document.createElement('div');
+        div.className = `scenario-card ${idx === 0 ? 'active' : ''}`;
+        div.onclick = () => selectScenario(idx);
+        div.innerHTML = `<h4>${sc.name}</h4><p>${sc.company}</p>`;
+        box.appendChild(div);
+    });
+    loadScenario(0);
+}
+
+function selectScenario(index) {
+    Array.from(document.getElementById('selector-box').children).forEach((c, i) => {
+        c.classList.toggle('active', i === index);
+    });
+    loadScenario(index);
+}
+
+function loadScenario(index) {
+    currentScenario = scenarios[index];
+    userChoices = {};
     
-    renderOptions('step1-options', scenario.step1, 'step1');
-    renderOptions('step2-options', scenario.step2, 'step2');
-    renderOptions('step3-options', scenario.step3, 'step3');
-    renderOptions('step4-options', scenario.step4, 'step4');
+    document.getElementById('scenario-title').innerText = currentScenario.title;
+    document.getElementById('scenario-desc').innerHTML = currentScenario.desc;
+    document.getElementById('biz-goal').innerText = currentScenario.bizGoal;
+
+    renderOptions('step1-options', currentScenario.step1, 'step1');
+    renderOptions('step2-options', currentScenario.step2, 'step2');
+    renderOptions('step3-options', currentScenario.step3, 'step3');
+    renderOptions('step4-options', currentScenario.step4, 'step4');
+
+    // Reset view
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('scenario-intro').style.display = 'block';
+    for(let i=1; i<=4; i++) {
+        document.getElementById(`step-${i}`).classList.remove('active');
+    }
+    document.getElementById('step-1').classList.add('active');
 }
 
 function renderOptions(elementId, options, stepName) {
     const container = document.getElementById(elementId);
     container.innerHTML = '';
-    options.forEach((opt, idx) => {
+    options.forEach((opt) => {
         const div = document.createElement('div');
         div.className = 'card';
         div.innerText = opt.text;
@@ -121,7 +439,7 @@ function renderOptions(elementId, options, stepName) {
 
 function nextStep(currentStep) {
     if (!userChoices['step' + currentStep]) {
-        alert('Please select an option first!');
+        alert('Please select an answer option first!');
         return;
     }
     document.getElementById(`step-${currentStep}`).classList.remove('active');
@@ -130,27 +448,82 @@ function nextStep(currentStep) {
 
 function submitAll() {
     if (!userChoices['step4']) {
-        alert('Please select an option first!');
+        alert('Please select an answer option first!');
         return;
     }
-    document.getElementById('step-4').classList.remove('active');
-    document.getElementById('title').innerText = "Strategy Breakdown";
-    document.getElementById('scenario-desc').innerText = "Here is how your choices mapped out:";
-
-    const summary = `
-        <p><b>1. Business Outcome:</b> ${scenario.bizGoal}</p>
-        <p><b>2. Product Outcome:</b> ${userChoices.step1.text} ${userChoices.step1.correct ? '✅' : '❌'}</p>
-        <p><b>3. Key KPI Lever:</b> ${userChoices.step2.text} ${userChoices.step2.correct ? '✅' : '❌'}</p>
-        <p><b>4. Core Opportunity:</b> ${userChoices.step3.text} ${userChoices.step3.correct ? '✅' : '❌'}</p>
-        <p><b>5. Target Segment:</b> ${userChoices.step4.text} ${userChoices.step4.correct ? '✅' : '❌'}</p>
-    `;
     
+    document.getElementById('step-4').classList.remove('active');
+    document.getElementById('scenario-intro').style.display = 'none';
+    
+    const insights = currentScenario.insights;
+    const summary = `
+        <div class="breakdown-card">
+            <div class="breakdown-header">
+                <b>1. Product Outcome Choice:</b>
+                <span class="${userChoices.step1.correct ? 'tag-correct' : 'tag-incorrect'}">${userChoices.step1.correct ? '✅ Optimal' : '❌ Suboptimal'}</span>
+            </div>
+            <p>Your Pick: "<i>${userChoices.step1.text}</i>"</p>
+            <div class="pm-insight">${insights.s1}</div>
+        </div>
+
+        <div class="breakdown-card">
+            <div class="breakdown-header">
+                <b>2. KPI Tree Lever Choice:</b>
+                <span class="${userChoices.step2.correct ? 'tag-correct' : 'tag-incorrect'}">${userChoices.step2.correct ? '✅ Optimal' : '❌ Suboptimal'}</span>
+            </div>
+            <p>Your Pick: "<i>${userChoices.step2.text}</i>"</p>
+            <div class="pm-insight">${insights.s2}</div>
+        </div>
+
+        <div class="breakdown-card">
+            <div class="breakdown-header">
+                <b>3. Opportunity Pain Point Choice:</b>
+                <span class="${userChoices.step3.correct ? 'tag-correct' : 'tag-incorrect'}">${userChoices.step3.correct ? '✅ Optimal' : '❌ Suboptimal'}</span>
+            </div>
+            <p>Your Pick: "<i>${userChoices.step3.text}</i>"</p>
+            <div class="pm-insight">${insights.s3}</div>
+        </div>
+
+        <div class="breakdown-card">
+            <div class="breakdown-header">
+                <b>4. User Segment Choice:</b>
+                <span class="${userChoices.step4.correct ? 'tag-correct' : 'tag-incorrect'}">${userChoices.step4.correct ? '✅ Optimal' : '❌ Suboptimal'}</span>
+            </div>
+            <p>Your Pick: "<i>${userChoices.step4.text}</i>"</p>
+            <div class="pm-insight">${insights.s4}</div>
+        </div>
+    `;
+
     document.getElementById('summary-content').innerHTML = summary;
     document.getElementById('results').style.display = 'block';
 }
 
-initApp();
-</script>
+function resetQuiz() {
+    loadScenario(0);
+}
 
+function toggleModal(show) {
+    document.getElementById('scenario-modal').style.display = show ? 'flex' : 'none';
+}
+
+function submitUserForm() {
+    const name = document.getElementById('form-name').value;
+    const industry = document.getElementById('form-industry').value;
+    const problem = document.getElementById('form-problem').value;
+
+    if(!name || !industry || !problem) {
+        alert("Please fill out all fields!");
+        return;
+    }
+
+    alert(`Thanks ${name}! Your scenario idea for "${industry}" has been submitted.`);
+    document.getElementById('form-name').value = '';
+    document.getElementById('form-industry').value = '';
+    document.getElementById('form-problem').value = '';
+    toggleModal(false);
+}
+
+initSelector();
+</script>
 </body>
 </html>

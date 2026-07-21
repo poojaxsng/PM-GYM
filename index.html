@@ -3,527 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The PM Gym - Advanced Practice & Scenario Simulator</title>
+    <title>PM Gym & Community</title>
     <style>
         :root {
-            --primary: #1a73e8;
-            --primary-dark: #1557b0;
-            --bg: #f8f9fa;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-main: #f8fafc;
+            --sidebar-bg: #0f172a;
             --card-bg: #ffffff;
-            --text: #202124;
-            --border: #dadce0;
-            --success: #1e8e3e;
-            --danger: #d93025;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 12px;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            line-height: 1.5;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-main); color: var(--text-main); height: 100vh; overflow: hidden; }
 
-        .container {
-            max-width: 850px;
-            margin: 0 auto;
-            background: var(--card-bg);
-            padding: 35px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-            border: 1px solid var(--border);
-        }
+        /* App Layout: Left Sidebar + Right Workspace */
+        .app-container { display: flex; height: 100vh; width: 100vw; }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #f1f3f4;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-        }
-
-        .badge {
-            background: #e8f0fe;
-            color: var(--primary);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 0.8rem;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        .submit-btn-alt {
-            background: transparent;
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .submit-btn-alt:hover {
-            background: #e8f0fe;
-        }
-
-        /* Scenario Selector */
-        .selector-box {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .scenario-card {
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .scenario-card:hover {
-            border-color: var(--primary);
-            background: #f8fafd;
-        }
-
-        .scenario-card.active {
-            border-color: var(--primary);
-            background: #e8f0fe;
-        }
-
-        .scenario-card h4 { margin: 0 0 5px 0; color: var(--primary); }
-        .scenario-card p { margin: 0; font-size: 0.85rem; color: #5f6368; }
-
-        /* Steps */
-        .step { display: none; margin-top: 20px; }
-        .step.active { display: block; }
-
-        .card {
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: 0.2s;
-            background: #fff;
-        }
-
-        .card:hover {
-            border-color: var(--primary);
-            background: #f8fafd;
-        }
-
-        .card.selected {
-            border-color: var(--primary);
-            background: #e8f0fe;
-            font-weight: 600;
-        }
-
-        button.main-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-
-        button.main-btn:hover { background: var(--primary-dark); }
-
-        /* Explanations & Results */
-        .score-board { display: none; }
+        /* Sidebar Navigation */
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 24px 16px; justify-content: space-between; }
+        .brand { font-size: 1.25rem; font-weight: 700; color: white; display: flex; align-items: center; gap: 10px; margin-bottom: 30px; }
+        .nav-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .nav-item { padding: 12px 16px; border-radius: 8px; color: #94a3b8; cursor: pointer; font-weight: 500; font-size: 0.95rem; transition: 0.2s; }
+        .nav-item:hover, .nav-item.active { background: #1e293b; color: white; }
         
-        .breakdown-card {
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
+        .user-profile-widget { background: #1e293b; padding: 12px 16px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; }
+        .auth-btn { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; }
 
-        .breakdown-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
+        /* Main Workspace Area */
+        .main-content { flex: 1; overflow-y: auto; padding: 32px 48px; }
+        .view-panel { display: none; max-width: 900px; margin: 0 auto; }
+        .view-panel.active { display: block; }
 
-        .tag-correct { color: var(--success); font-weight: bold; }
-        .tag-incorrect { color: var(--danger); font-weight: bold; }
+        .header-title { margin-bottom: 24px; }
+        .header-title h1 { font-size: 1.8rem; font-weight: 700; }
+        .header-title p { color: var(--text-muted); margin-top: 4px; }
 
-        .pm-insight {
-            background: #f8f9fa;
-            border-left: 4px solid var(--primary);
-            padding: 12px 15px;
-            margin-top: 10px;
-            font-size: 0.9rem;
-            border-radius: 0 6px 6px 0;
-        }
+        /* General Card Design */
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 
-        /* Modal Form */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
+        /* Auth Form UI */
+        .auth-box { max-width: 400px; margin: 40px auto; text-align: center; }
+        .input-group { margin-bottom: 16px; text-align: left; }
+        .input-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
+        .input-group input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; }
 
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 500px;
-            width: 90%;
-        }
-
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem; }
-        .form-group input, .form-group textarea {
-            width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box;
-        }
+        /* Community Forum UI */
+        .forum-post { border-bottom: 1px solid var(--border); padding: 16px 0; }
+        .forum-post:last-child { border-bottom: none; }
+        .post-author { font-size: 0.85rem; font-weight: 600; color: var(--primary); margin-bottom: 4px; }
+        .post-content { font-size: 0.95rem; color: var(--text-main); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
+<div class="app-container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
         <div>
-            <span class="badge">PM Fellowship Gym v2.0</span>
-            <h2 style="margin: 5px 0 0 0;">Interactive Scenario Simulator</h2>
+            <div class="brand">🚀 PM Gym</div>
+            <ul class="nav-list">
+                <li class="nav-item active" onclick="switchTab('scenarios-tab', this)">🎮 Scenarios</li>
+                <li class="nav-item" onclick="switchTab('community-tab', this)">💬 Community Hub</li>
+                <li class="nav-item" onclick="switchTab('auth-tab', this)">👤 My Account</li>
+            </ul>
         </div>
-        <button class="submit-btn-alt" onclick="toggleModal(true)">+ Submit a Scenario</button>
-    </div>
-
-    <!-- SCENARIO SELECTOR -->
-    <p style="font-weight: 600; margin-bottom: 10px;">Select an Industry / Domain to Practice:</p>
-    <div class="selector-box" id="selector-box"></div>
-
-    <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
-
-    <div id="scenario-intro">
-        <h3 id="scenario-title" style="color: var(--primary); margin-top: 0;"></h3>
-        <p id="scenario-desc"></p>
-    </div>
-
-    <!-- STEP 1 -->
-    <div id="step-1" class="step active">
-        <h3>Step 1: Business Outcome ➔ Product Outcome</h3>
-        <p><b>Business Goal:</b> <span id="biz-goal"></span></p>
-        <p>Which option represents the best <b>Product Outcome</b> (a measurable change in user behavior)?</p>
-        <div id="step1-options"></div>
-        <button class="main-btn" onclick="nextStep(1)">Submit Step 1 →</button>
-    </div>
-
-    <!-- STEP 2 -->
-    <div id="step-2" class="step">
-        <h3>Step 2: KPI Tree (Leverage Metrics)</h3>
-        <p>To move the product outcome chosen, which sub-metric node serves as your primary <b>leading indicator lever</b>?</p>
-        <div id="step2-options"></div>
-        <button class="main-btn" onclick="nextStep(2)">Submit Step 2 →</button>
-    </div>
-
-    <!-- STEP 3 -->
-    <div id="step-3" class="step">
-        <h3>Step 3: Opportunity Mapping (User Pain Points)</h3>
-        <p>What is the root <b>Customer Opportunity / Pain Point</b> to solve here?</p>
-        <div id="step3-options"></div>
-        <button class="main-btn" onclick="nextStep(3)">Submit Step 3 →</button>
-    </div>
-
-    <!-- STEP 4 -->
-    <div id="step-4" class="step">
-        <h3>Step 4: User Segmentation for Scale</h3>
-        <p>Which user cohort gives you the highest strategic leverage to tackle first?</p>
-        <div id="step4-options"></div>
-        <button class="main-btn" onclick="submitAll()">Analyze My Choices 🎯</button>
-    </div>
-
-    <!-- RESULTS -->
-    <div id="results" class="score-board">
-        <h2>🎯 Senior PM Breakdown & Coaching</h2>
-        <p>Here is how your decisions align with core product management logic:</p>
-        <div id="summary-content"></div>
-        <button class="main-btn" onclick="resetQuiz()">Try Another Industry</button>
-    </div>
-</div>
-
-<!-- SUBMIT SCENARIO MODAL -->
-<div class="modal" id="scenario-modal">
-    <div class="modal-content">
-        <h3 style="margin-top:0;">Submit a Practice Scenario</h3>
-        <p style="font-size:0.85rem; color:#5f6368;">Have a scenario from your fellowship or interview practice? Add it here!</p>
-        <div class="form-group">
-            <label>Your Name / Cohort:</label>
-            <input type="text" id="form-name" placeholder="e.g., Pooja (Cohort 5)">
+        <div class="user-profile-widget" id="user-widget">
+            <button class="auth-btn" onclick="switchTab('auth-tab', document.querySelectorAll('.nav-item')[2])">Sign Up / Log In</button>
         </div>
-        <div class="form-group">
-            <label>Industry / Product Name:</label>
-            <input type="text" id="form-industry" placeholder="e.g., FinTech / Paytm">
-        </div>
-        <div class="form-group">
-            <label>Business Goal or Problem Statement:</label>
-            <textarea id="form-problem" rows="3" placeholder="Describe the business outcome or metric drop..."></textarea>
-        </div>
-        <button class="main-btn" onclick="submitUserForm()" style="width:100%;">Submit Idea</button>
-        <button onclick="toggleModal(false)" style="background:none; border:none; color:#5f6368; width:100%; margin-top:10px; cursor:pointer;">Cancel</button>
-    </div>
+    </aside>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="main-content">
+        <!-- TAB 1: SCENARIOS -->
+        <section id="scenarios-tab" class="view-panel active">
+            <div class="header-title">
+                <h1>PM Scenario Simulator</h1>
+                <p>Test and sharpen your product decision-making across industries.</p>
+            </div>
+            <div class="card">
+                <h3>Select an Industry Scenario</h3>
+                <p style="color: var(--text-muted); margin-top: 8px;">Choose a domain to start practicing: B2C Mobility, EdTech, or B2B SaaS.</p>
+            </div>
+        </section>
+
+        <!-- TAB 2: COMMUNITY HUB -->
+        <section id="community-tab" class="view-panel">
+            <div class="header-title">
+                <h1>Fellowship Community</h1>
+                <p>Discuss scenarios, share feedback, and collaborate with fellow PMs.</p>
+            </div>
+            <div class="card">
+                <h3>Start a Discussion</h3>
+                <div class="input-group" style="margin-top: 15px;">
+                    <textarea placeholder="Share your thoughts on a scenario or ask a question..." style="width:100%; padding:12px; border:1px solid var(--border); border-radius:6px; min-height:80px;"></textarea>
+                </div>
+                <button class="auth-btn" style="width: auto;">Post to Community</button>
+            </div>
+
+            <div class="card">
+                <h3>Recent Discussions</h3>
+                <div class="forum-post">
+                    <div class="post-author">Pooja S. • Cohort 5</div>
+                    <div class="post-content">How is everyone approaching the KPI tree for retention in the SaaS scenario? Should we focus on weekly active teams or daily active users?</div>
+                </div>
+                <div class="forum-post">
+                    <div class="post-author">Aarav M. • Fellow</div>
+                    <div class="post-content">Great point on reducing checkout friction in the mobility scenario! Reducing taps on the route screen really boosted my score.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: AUTHENTICATION -->
+        <section id="auth-tab" class="view-panel">
+            <div class="auth-box card">
+                <h2>Join PM Gym</h2>
+                <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">Sign up to track your scenario progress and join discussions.</p>
+                
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" placeholder="e.g. Pooja Singh">
+                </div>
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" placeholder="you@example.com">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="••••••••">
+                </div>
+                <button class="auth-btn" style="width: 100%; padding: 12px;">Create Account</button>
+            </div>
+        </section>
+    </main>
 </div>
 
 <script>
-const scenarios = [
-    {
-        id: "mobility",
-        name: "B2C Mobility App",
-        company: "RideFast",
-        title: "RideFast: Repeat Usage Strategy",
-        desc: "RideFast's executive team wants to boost overall revenue by 15% (Business Outcome) without increasing marketing spend.",
-        bizGoal: "Increase Monthly Revenue by 15%",
-        step1: [
-            { text: "Increase base fare prices by $2 per ride across the board.", correct: false },
-            { text: "Increase % of active riders who book a 2nd ride within 7 days.", correct: true },
-            { text: "Increase ad budget on Google Search to drive new installs.", correct: false }
-        ],
-        step2: [
-            { text: "% of users who save 'Favorite Locations' (Home/Work) in app.", correct: true },
-            { text: "Total app downloads on iOS App Store.", correct: false }
-        ],
-        step3: [
-            { text: "Commuters feel re-entering their morning route daily requires too many taps.", correct: true },
-            { text: "Riders want the app icon to change color dynamically.", correct: false }
-        ],
-        step4: [
-            { text: "Daily Commuters (Riders booking Mon-Fri 8 AM - 10 AM).", correct: true },
-            { text: "One-time Airport Passengers (Riders booking once every 6 months).", correct: false }
-        ],
-        insights: {
-            s1: "<b>How a PM Thinks:</b> Price hikes drive short-term revenue but harm retention. Advertising increases acquisition costs. A PM targets <i>user retention (repeat rides)</i>—a high-leverage product outcome.",
-            s2: "<b>KPI Tree Logic:</b> Saving favorite locations cuts booking friction from 15 seconds to 2 seconds. Reduced friction directly lifts conversion to 2nd ride.",
-            s3: "<b>Opportunity Mapping:</b> Solve functional pain points that happen frequently (re-entering destination) rather than cosmetic features (app color).",
-            s4: "<b>Segmentation Strategy:</b> Daily commuters represent high frequency. Retaining a daily commuter creates recurring long-term customer lifetime value (LTV)."
-        }
-    },
-    {
-        id: "edtech",
-        name: "EdTech / Consumer",
-        company: "SkillStride",
-        title: "SkillStride: Course Completion & Retention",
-        desc: "SkillStride has strong user signups, but active monthly users (MAU) drop by 40% after week 2.",
-        bizGoal: "Reduce 30-Day Churn Rate by 20%",
-        step1: [
-            { text: "Increase the percentage of users completing at least 1 lesson per week.", correct: true },
-            { text: "Send 5 marketing push notifications every day to inactive users.", correct: false },
-            { text: "Offer a 50% discount on annual subscriptions.", correct: false }
-        ],
-        step2: [
-            { text: "% of users who set a daily study goal during onboarding.", correct: true },
-            { text: "Total hours of video content uploaded by instructors.", correct: false }
-        ],
-        step3: [
-            { text: "Learners lose motivation because 45-minute videos are too long for busy schedules.", correct: true },
-            { text: "Learners want a dark mode interface option.", correct: false }
-        ],
-        step4: [
-            { text: "Working Professionals (15–30 mins free time per day).", correct: true },
-            { text: "Full-Time College Students (Multiple hours free per day).", correct: false }
-        ],
-        insights: {
-            s1: "<b>How a PM Thinks:</b> Churn is driven by lack of perceived value. Spamming notifications or discounting price doesn't build learning habits—driving <i>weekly lesson completion</i> does.",
-            s2: "<b>KPI Tree Logic:</b> Habit formation starts in onboarding. Users who set a commitment goal demonstrate a 2-3x higher retention rate.",
-            s3: "<b>Opportunity Mapping:</b> Address core learning friction (video length vs. available time). Micro-learning bites solve the actual schedule pain point.",
-            s4: "<b>Segmentation Strategy:</b> Working professionals have high intent and high ability to pay, but low time—making them the ideal segment for bite-sized learning features."
-        }
-    },
-    {
-        id: "saas",
-        name: "B2B Enterprise SaaS",
-        company: "CloudMetrics",
-        title: "CloudMetrics: Free-to-Paid Conversion",
-        desc: "CloudMetrics offers a 14-day free trial, but only 2% of trial users convert to paid plans.",
-        bizGoal: "Increase Free-to-Paid Trial Conversion from 2% to 5%",
-        step1: [
-            { text: "Increase the % of trial teams that invite at least 2 teammates in week 1.", correct: true },
-            { text: "Shorten free trial duration from 14 days to 7 days.", correct: false },
-            { text: "Hire 10 more sales representatives.", correct: false }
-        ],
-        step2: [
-            { text: "% of teams completing the 'Connect Data Source' integration within 24 hours.", correct: true },
-            { text: "Number of pageviews on the pricing page.", correct: false }
-        ],
-        step3: [
-            { text: "Users struggle to see value because connecting their database requires developer assistance.", correct: true },
-            { text: "Users want more color options for custom data charts.", correct: false }
-        ],
-        step4: [
-            { text: "Mid-Market Tech Teams (50-200 employees with fast setup capability).", correct: true },
-            { text: "Large Enterprise Corporations (5,000+ employees with strict legal procurement).", correct: false }
-        ],
-        insights: {
-            s1: "<b>How a PM Thinks:</b> B2B SaaS value relies on team collaboration (multiplayer effect). Inviting teammates creates organizational stickiness.",
-            s2: "<b>KPI Tree Logic:</b> Time-to-Value (TTV) is critical. Connecting data sources is the 'Aha! moment' that predicts paid conversion.",
-            s3: "<b>Opportunity Mapping:</b> Friction during data setup prevents users from reaching the value moment. Simplifying setup drives core metric movement.",
-            s4: "<b>Segmentation Strategy:</b> Mid-market teams can adopt software without months of legal clearance, allowing faster product-led growth."
-        }
-    }
-];
-
-let currentScenario = scenarios[0];
-let userChoices = {};
-
-function initSelector() {
-    const box = document.getElementById('selector-box');
-    box.innerHTML = '';
-    scenarios.forEach((sc, idx) => {
-        const div = document.createElement('div');
-        div.className = `scenario-card ${idx === 0 ? 'active' : ''}`;
-        div.onclick = () => selectScenario(idx);
-        div.innerHTML = `<h4>${sc.name}</h4><p>${sc.company}</p>`;
-        box.appendChild(div);
-    });
-    loadScenario(0);
-}
-
-function selectScenario(index) {
-    Array.from(document.getElementById('selector-box').children).forEach((c, i) => {
-        c.classList.toggle('active', i === index);
-    });
-    loadScenario(index);
-}
-
-function loadScenario(index) {
-    currentScenario = scenarios[index];
-    userChoices = {};
+function switchTab(tabId, element) {
+    document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
     
-    document.getElementById('scenario-title').innerText = currentScenario.title;
-    document.getElementById('scenario-desc').innerHTML = currentScenario.desc;
-    document.getElementById('biz-goal').innerText = currentScenario.bizGoal;
-
-    renderOptions('step1-options', currentScenario.step1, 'step1');
-    renderOptions('step2-options', currentScenario.step2, 'step2');
-    renderOptions('step3-options', currentScenario.step3, 'step3');
-    renderOptions('step4-options', currentScenario.step4, 'step4');
-
-    // Reset view
-    document.getElementById('results').style.display = 'none';
-    document.getElementById('scenario-intro').style.display = 'block';
-    for(let i=1; i<=4; i++) {
-        document.getElementById(`step-${i}`).classList.remove('active');
-    }
-    document.getElementById('step-1').classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+    element.classList.add('active');
 }
-
-function renderOptions(elementId, options, stepName) {
-    const container = document.getElementById(elementId);
-    container.innerHTML = '';
-    options.forEach((opt) => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.innerText = opt.text;
-        div.onclick = () => {
-            Array.from(container.children).forEach(c => c.classList.remove('selected'));
-            div.classList.add('selected');
-            userChoices[stepName] = opt;
-        };
-        container.appendChild(div);
-    });
-}
-
-function nextStep(currentStep) {
-    if (!userChoices['step' + currentStep]) {
-        alert('Please select an answer option first!');
-        return;
-    }
-    document.getElementById(`step-${currentStep}`).classList.remove('active');
-    document.getElementById(`step-${currentStep + 1}`).classList.add('active');
-}
-
-function submitAll() {
-    if (!userChoices['step4']) {
-        alert('Please select an answer option first!');
-        return;
-    }
-    
-    document.getElementById('step-4').classList.remove('active');
-    document.getElementById('scenario-intro').style.display = 'none';
-    
-    const insights = currentScenario.insights;
-    const summary = `
-        <div class="breakdown-card">
-            <div class="breakdown-header">
-                <b>1. Product Outcome Choice:</b>
-                <span class="${userChoices.step1.correct ? 'tag-correct' : 'tag-incorrect'}">${userChoices.step1.correct ? '✅ Optimal' : '❌ Suboptimal'}</span>
-            </div>
-            <p>Your Pick: "<i>${userChoices.step1.text}</i>"</p>
-            <div class="pm-insight">${insights.s1}</div>
-        </div>
-
-        <div class="breakdown-card">
-            <div class="breakdown-header">
-                <b>2. KPI Tree Lever Choice:</b>
-                <span class="${userChoices.step2.correct ? 'tag-correct' : 'tag-incorrect'}">${userChoices.step2.correct ? '✅ Optimal' : '❌ Suboptimal'}</span>
-            </div>
-            <p>Your Pick: "<i>${userChoices.step2.text}</i>"</p>
-            <div class="pm-insight">${insights.s2}</div>
-        </div>
-
-        <div class="breakdown-card">
-            <div class="breakdown-header">
-                <b>3. Opportunity Pain Point Choice:</b>
-                <span class="${userChoices.step3.correct ? 'tag-correct' : 'tag-incorrect'}">${userChoices.step3.correct ? '✅ Optimal' : '❌ Suboptimal'}</span>
-            </div>
-            <p>Your Pick: "<i>${userChoices.step3.text}</i>"</p>
-            <div class="pm-insight">${insights.s3}</div>
-        </div>
-
-        <div class="breakdown-card">
-            <div class="breakdown-header">
-                <b>4. User Segment Choice:</b>
-                <span class="${userChoices.step4.correct ? 'tag-correct' : 'tag-incorrect'}">${userChoices.step4.correct ? '✅ Optimal' : '❌ Suboptimal'}</span>
-            </div>
-            <p>Your Pick: "<i>${userChoices.step4.text}</i>"</p>
-            <div class="pm-insight">${insights.s4}</div>
-        </div>
-    `;
-
-    document.getElementById('summary-content').innerHTML = summary;
-    document.getElementById('results').style.display = 'block';
-}
-
-function resetQuiz() {
-    loadScenario(0);
-}
-
-function toggleModal(show) {
-    document.getElementById('scenario-modal').style.display = show ? 'flex' : 'none';
-}
-
-function submitUserForm() {
-    const name = document.getElementById('form-name').value;
-    const industry = document.getElementById('form-industry').value;
-    const problem = document.getElementById('form-problem').value;
-
-    if(!name || !industry || !problem) {
-        alert("Please fill out all fields!");
-        return;
-    }
-
-    alert(`Thanks ${name}! Your scenario idea for "${industry}" has been submitted.`);
-    document.getElementById('form-name').value = '';
-    document.getElementById('form-industry').value = '';
-    document.getElementById('form-problem').value = '';
-    toggleModal(false);
-}
-
-initSelector();
 </script>
 </body>
 </html>
